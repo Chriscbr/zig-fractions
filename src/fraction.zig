@@ -155,6 +155,11 @@ pub const Fraction = struct {
         self.sign = !self.sign;
     }
 
+    /// Return a new fraction that is the negative.
+    pub fn toNegation(self: *const Fraction) Fraction {
+        return Fraction{ .num = self.num, .denom = self.denom, .sign = !self.sign };
+    }
+
     /// Modify to become the reciprocal.
     pub fn reciprocal(self: *Fraction) !void {
         const tmp = self.num;

@@ -90,6 +90,20 @@ test "negate" {
     try expectEqual(false, f2.sign);
 }
 
+test "toNegation" {
+    const f1 = try Fraction.init(3, 6, false);
+    const r1 = f1.toNegation();
+    try expectEqual(3, r1.num);
+    try expectEqual(6, r1.denom);
+    try expectEqual(true, r1.sign);
+
+    const f2 = try Fraction.init(3, 6, true);
+    const r2 = f2.toNegation();
+    try expectEqual(3, r2.num);
+    try expectEqual(6, r2.denom);
+    try expectEqual(false, r2.sign);
+}
+
 test "reciprocal" {
     var f1 = try Fraction.init(1, 2, false);
     try f1.reciprocal();
