@@ -14,7 +14,7 @@ pub const FractionError = error{
 // TODO: order(), orderAbs()
 // TODO: mutating add(), sub(), mul(), div(), pow()
 
-// TODO: a way to create a Fraction from a float
+// TODO: fromFloat()
 // see: https://github.com/python/cpython/blob/6239d41527d5977aa5d44e4b894d719bc045860e/Objects/floatobject.c#L1556
 
 pub const Fraction = struct {
