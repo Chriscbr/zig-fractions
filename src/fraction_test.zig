@@ -18,6 +18,36 @@ test "init" {
     try expectError(FractionError.DenominatorCannotBeZero, err);
 }
 
+test "toString" {
+    const f1 = try Fraction.init(1, 2, false);
+    const f1s = try f1.toStringAlloc(testing.allocator, .lower);
+    defer testing.allocator.free(f1s);
+    try expect(std.mem.eql(u8, "1/2", f1s));
+
+    const f2 = try Fraction.init(0, 10, false);
+    const f2s = try f2.toStringAlloc(testing.allocator, .lower);
+    defer testing.allocator.free(f2s);
+    try expect(std.mem.eql(u8, "0/10", f2s));
+
+    const f3 = try Fraction.init(123, 456, true);
+    const f3s = try f3.toStringAlloc(testing.allocator, .lower);
+    defer testing.allocator.free(f3s);
+    try expect(std.mem.eql(u8, "-123/456", f3s));
+}
+
+test "format" {
+    const f1 = try Fraction.init(123, 456, true);
+    const f1_fmt = try std.fmt.allocPrintZ(testing.allocator, "{d}", .{f1});
+    defer testing.allocator.free(f1_fmt);
+    try expect(std.mem.eql(u8, "-123/456", f1_fmt));
+
+    // TODO: this test might fail on 32-bit systems
+    const f2 = try Fraction.init(std.math.maxInt(usize) - 1, std.math.maxInt(usize), true);
+    const f2_fmt = try std.fmt.allocPrintZ(testing.allocator, "{d}", .{f2});
+    defer testing.allocator.free(f2_fmt);
+    try expect(std.mem.eql(u8, "-18446744073709551614/18446744073709551615", f2_fmt));
+}
+
 test "abs" {
     var f1 = try Fraction.init(1, 2, false);
     f1.abs();
