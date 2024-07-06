@@ -152,6 +152,14 @@ test "eqlAbs" {
     try expect(try Fraction.eqlAbs(&f3, &f4));
 }
 
+test "eqlZero" {
+    const f1 = try Fraction.init(0, 1, false);
+    try expect(f1.eqlZero());
+
+    const f2 = try Fraction.init(1, 2, false);
+    try expect(!f2.eqlZero());
+}
+
 test "simplify" {
     var f1 = try Fraction.init(4, 6, false);
     f1.simplify();

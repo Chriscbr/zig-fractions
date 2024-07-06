@@ -10,7 +10,6 @@ pub const FractionError = error{
 // TODO: to(comptime type T) T
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
-// TODO: eqlZero()
 // TODO: order(), orderAbs()
 // TODO: mutating add(), sub(), mul(), div(), pow()
 
@@ -191,6 +190,11 @@ pub const Fraction = struct {
         const r1 = try math.mul(usize, a.num, b.denom);
         const r2 = try math.mul(usize, b.num, a.denom);
         return r1 == r2;
+    }
+
+    /// Returns true if the fraction is zero.
+    pub fn eqlZero(self: *const Fraction) bool {
+        return self.num == 0;
     }
 
     /// Simplify the fraction.
