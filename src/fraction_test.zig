@@ -173,3 +173,17 @@ test "simplify" {
     try expectEqual(3, f2.denom);
     try expectEqual(true, f2.sign);
 }
+
+test "toSimplified" {
+    const f1 = try Fraction.init(4, 6, false);
+    const r1 = f1.toSimplified();
+    try expectEqual(2, r1.num);
+    try expectEqual(3, r1.denom);
+    try expectEqual(false, r1.sign);
+
+    const f2 = try Fraction.init(4, 6, true);
+    const r2 = f2.toSimplified();
+    try expectEqual(2, r2.num);
+    try expectEqual(3, r2.denom);
+    try expectEqual(true, r2.sign);
+}

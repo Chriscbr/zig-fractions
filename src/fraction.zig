@@ -203,6 +203,12 @@ pub const Fraction = struct {
         self.num = @divExact(self.num, gcd);
         self.denom = @divExact(self.denom, gcd);
     }
+
+    /// Return a new fraction that is the simplified version.
+    pub fn toSimplified(self: *const Fraction) Fraction {
+        const gcd = std.math.gcd(self.num, self.denom);
+        return Fraction{ .num = @divExact(self.num, gcd), .denom = @divExact(self.denom, gcd), .sign = self.sign };
+    }
 };
 
 test {
