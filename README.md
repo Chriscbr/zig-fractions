@@ -4,6 +4,16 @@ A Zig library for performing math with fractions, where each fraction is represe
 
 Compatible with Zig 0.13 stable.
 
+Supported APIs:
+
+- convertion from floats, or numerator/denominator pairs (`fromFloat()`, `init()`)
+- convertion to floats and integers (`to(T)`)
+- formatting (`toString()`, `toStringAlloc()`, `format()`)
+- negation, absolute value (`negate()`, `abs()`)
+- addition, subtraction, multiplication, division (`add()`, `sub()`, `mul()`, `div()`)
+- comparison (`eql()`, `eqlAbs()`, `eqlZero()`, `order()`, `orderAbs()`)
+- simplifying (`simplify()`)
+
 ## Installation
 
 First, run the following:
