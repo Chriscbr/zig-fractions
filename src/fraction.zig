@@ -71,6 +71,7 @@ pub const Fraction = struct {
     /// `buf` is caller-provided memory for toString to use as a working area.
     /// It must have length at least `toStringBufferLen`.
     /// Returns the length of the string.
+    /// See also `toStringAlloc`, a higher level function than this.
     pub fn toString(self: *const Fraction, buf: []u8, case: std.fmt.Case) usize {
         assert(self.denom != 0);
         var digits_len: usize = 0;
@@ -236,9 +237,69 @@ pub const Fraction = struct {
         return math.order(ad, bc);
     }
 
+    /// Subtract another fraction from this fraction.
+    /// The result is stored in this fraction.
+    pub fn sub(self: *Fraction, other: *const Fraction) !void {
+        if (!self.sign and other.sign) {
+            // a/b - -c/d = a/b + c/d = (a*d + b*c) / b*d
+            const ad = try math.mul(usize, self.num, other.denom);
+            const bc = try math.mul(usize, other.num, self.denom);
+            const denom = try math.mul(usize, self.denom, other.denom);
+            const num = try math.add(usize, ad, bc);
+            self.num = num;
+            self.denom = denom;
+            self.sign = false;
+            self.simplify();
+            return;
+        } else if (self.sign and !other.sign) {
+            // -a/b - c/d = -a/b + -c/d = -(a*d + b*c) / b*d
+            const ad = try math.mul(usize, self.num, other.denom);
+            const bc = try math.mul(usize, other.num, self.denom);
+            const denom = try math.mul(usize, self.denom, other.denom);
+            const num = try math.add(usize, ad, bc);
+            self.num = num;
+            self.denom = denom;
+            self.sign = true;
+            self.simplify();
+            return;
+        }
+
+        const ord = try self.orderAbs(other);
+        switch (ord) {
+            .eq => {
+                self.num = 0;
+                self.denom = 1;
+                self.sign = false;
+            },
+            .gt => {
+                // a/b - c/d = (a*d - b*c) / b*d
+                // -a/b - -c/d = - (a*d + b*c) / b*d
+                const ad = try math.mul(usize, self.num, other.denom);
+                const bc = try math.mul(usize, other.num, self.denom);
+                const denom = try math.mul(usize, self.denom, other.denom);
+                const num = try math.sub(usize, ad, bc);
+                self.num = num;
+                self.denom = denom;
+                self.sign = self.sign;
+                self.simplify();
+            },
+            .lt => {
+                // a/b - c/d = - (b*c - a*d) / b*d
+                // -a/b - -c/d = (b*c - a*d) / b*d
+                const ad = try math.mul(usize, self.num, other.denom);
+                const bc = try math.mul(usize, other.num, self.denom);
+                const denom = try math.mul(usize, self.denom, other.denom);
+                const num = try math.sub(usize, bc, ad);
+                self.num = num;
+                self.denom = denom;
+                self.sign = !self.sign;
+                self.simplify();
+            },
+        }
+    }
+
     /// Multiply another fraction to this fraction.
     /// The result is stored in this fraction.
-    /// Returns an error if the result is not representable.
     pub fn mul(self: *Fraction, other: *const Fraction) !void {
         // a/b * c/d = a*c / b*d
         const num = try math.mul(usize, self.num, other.num);
