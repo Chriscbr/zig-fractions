@@ -208,6 +208,78 @@ test "order" {
     try expect(try f5.order(&f5) == std.math.Order.eq);
 }
 
+test "add" {
+    // 1/2 + 1/3 = 5/6
+    var f1 = try Fraction.init(1, 2, false);
+    const f2 = try Fraction.init(1, 3, false);
+    try f1.add(&f2);
+    try expectEqual(5, f1.num);
+    try expectEqual(6, f1.denom);
+    try expectEqual(false, f1.sign);
+
+    // 1/2 + -1/3 = 1/6
+    var f3 = try Fraction.init(1, 2, false);
+    const f4 = try Fraction.init(1, 3, true);
+    try f3.add(&f4);
+    try expectEqual(1, f3.num);
+    try expectEqual(6, f3.denom);
+    try expectEqual(false, f3.sign);
+
+    // -1/2 + 1/3 = -1/6
+    var f5 = try Fraction.init(1, 2, true);
+    const f6 = try Fraction.init(1, 3, false);
+    try f5.add(&f6);
+    try expectEqual(1, f5.num);
+    try expectEqual(6, f5.denom);
+    try expectEqual(true, f5.sign);
+
+    // -1/2 + -1/3 = -5/6
+    var f7 = try Fraction.init(1, 2, true);
+    const f8 = try Fraction.init(1, 3, true);
+    try f7.add(&f8);
+    try expectEqual(5, f7.num);
+    try expectEqual(6, f7.denom);
+    try expectEqual(true, f7.sign);
+
+    // 1/3 + 1/2 = 5/6
+    var f9 = try Fraction.init(1, 3, false);
+    const f10 = try Fraction.init(1, 2, false);
+    try f9.add(&f10);
+    try expectEqual(5, f9.num);
+    try expectEqual(6, f9.denom);
+    try expectEqual(false, f9.sign);
+
+    // 1/3 + -1/2 = -1/6
+    var f11 = try Fraction.init(1, 3, false);
+    const f12 = try Fraction.init(1, 2, true);
+    try f11.add(&f12);
+    try expectEqual(1, f11.num);
+    try expectEqual(6, f11.denom);
+    try expectEqual(true, f11.sign);
+
+    // -1/3 + 1/2 = 1/6
+    var f13 = try Fraction.init(1, 3, true);
+    const f14 = try Fraction.init(1, 2, false);
+    try f13.add(&f14);
+    try expectEqual(1, f13.num);
+    try expectEqual(6, f13.denom);
+    try expectEqual(false, f13.sign);
+
+    // -1/3 + -1/2 = -5/6
+    var f15 = try Fraction.init(1, 3, true);
+    const f17 = try Fraction.init(1, 2, true);
+    try f15.add(&f17);
+    try expectEqual(5, f15.num);
+    try expectEqual(6, f15.denom);
+    try expectEqual(true, f15.sign);
+
+    var f18 = try Fraction.init(1, 2, false);
+    try f18.add(&f18);
+    try expectEqual(1, f18.num);
+    try expectEqual(1, f18.denom);
+    try expectEqual(false, f18.sign);
+}
+
 test "sub" {
     // 1/2 - 1/3 = 1/6
     var f1 = try Fraction.init(1, 2, false);
