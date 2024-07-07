@@ -5,12 +5,12 @@ const Allocator = std.mem.Allocator;
 
 pub const FractionError = error{
     DenominatorCannotBeZero,
+    DivisionByZero,
 };
 
 // TODO: to(comptime type T) T
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
-// TODO: mutating add(), sub(), mul(), div(), pow()
 
 // TODO: fromFloat()
 // see: https://github.com/python/cpython/blob/6239d41527d5977aa5d44e4b894d719bc045860e/Objects/floatobject.c#L1556
@@ -330,6 +330,21 @@ pub const Fraction = struct {
         // a/b * c/d = a*c / b*d
         const num = try math.mul(usize, self.num, other.num);
         const denom = try math.mul(usize, self.denom, other.denom);
+        self.num = num;
+        self.denom = denom;
+        self.sign = self.sign != other.sign;
+        self.simplify();
+    }
+
+    /// Divide this fraction by another fraction.
+    /// The result is stored in this fraction.
+    pub fn div(self: *Fraction, other: *const Fraction) !void {
+        if (other.num == 0) {
+            return FractionError.DivisionByZero;
+        }
+        // a/b / c/d = a/b * d/c = a*d / b*c
+        const num = try math.mul(usize, self.num, other.denom);
+        const denom = try math.mul(usize, self.denom, other.num);
         self.num = num;
         self.denom = denom;
         self.sign = self.sign != other.sign;

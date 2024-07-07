@@ -365,3 +365,22 @@ test "mul" {
     try expectEqual(4, f3.denom);
     try expectEqual(false, f3.sign);
 }
+
+test "div" {
+    var f1 = try Fraction.init(1, 2, false);
+    const f2 = try Fraction.init(3, 5, false);
+    try f1.div(&f2);
+    try expectEqual(5, f1.num);
+    try expectEqual(6, f1.denom);
+
+    var f3 = try Fraction.init(1, 2, true);
+    try f3.div(&f3);
+    try expectEqual(1, f3.num);
+    try expectEqual(1, f3.denom);
+    try expectEqual(false, f3.sign);
+
+    var f4 = try Fraction.init(1, 2, false);
+    const f5 = try Fraction.init(0, 1, false);
+    const err = f4.div(&f5);
+    try expectError(FractionError.DivisionByZero, err);
+}
