@@ -10,7 +10,6 @@ pub const FractionError = error{
 // TODO: to(comptime type T) T
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
-// TODO: order(), orderAbs()
 // TODO: mutating add(), sub(), mul(), div(), pow()
 
 // TODO: fromFloat()
@@ -199,15 +198,42 @@ pub const Fraction = struct {
 
     /// Simplify the fraction.
     pub fn simplify(self: *Fraction) void {
-        const gcd = std.math.gcd(self.num, self.denom);
+        const gcd = math.gcd(self.num, self.denom);
         self.num = @divExact(self.num, gcd);
         self.denom = @divExact(self.denom, gcd);
     }
 
     /// Return a new fraction that is the simplified version.
     pub fn toSimplified(self: *const Fraction) Fraction {
-        const gcd = std.math.gcd(self.num, self.denom);
+        const gcd = math.gcd(self.num, self.denom);
         return Fraction{ .num = @divExact(self.num, gcd), .denom = @divExact(self.denom, gcd), .sign = self.sign };
+    }
+
+    /// Returns `math.Order.lt`, `math.Order.eq`, `math.Order.gt` if `a < b`, `a == b` or `a > b` respectively.
+    pub fn order(self: *const Fraction, other: *const Fraction) !math.Order {
+        if (self.sign != other.sign) {
+            if (eqlZero(self) and eqlZero(other)) {
+                return .eq;
+            } else {
+                return if (self.sign) .lt else .gt;
+            }
+        } else {
+            const r = try orderAbs(self, other);
+            return if (!self.sign) r else switch (r) {
+                .lt => math.Order.gt,
+                .eq => math.Order.eq,
+                .gt => math.Order.lt,
+            };
+        }
+    }
+
+    /// Returns `math.Order.lt`, `math.Order.eq`, `math.Order.gt` if
+    /// `|a| < |b|`, `|a| == |b|`, or `|a| > |b|` respectively.
+    pub fn orderAbs(self: *const Fraction, other: *const Fraction) !math.Order {
+        // a/b < c/d <=> a*d < b*c
+        const ad = try math.mul(usize, self.num, other.denom);
+        const bc = try math.mul(usize, other.num, self.denom);
+        return math.order(ad, bc);
     }
 };
 

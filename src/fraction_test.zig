@@ -187,3 +187,23 @@ test "toSimplified" {
     try expectEqual(3, r2.denom);
     try expectEqual(true, r2.sign);
 }
+
+test "order" {
+    const f1 = try Fraction.init(1, 2, false);
+    const f2 = try Fraction.init(1, 3, false);
+    try expect(try f1.order(&f2) == std.math.Order.gt);
+    try expect(try f2.order(&f1) == std.math.Order.lt);
+    try expect(try f1.order(&f1) == std.math.Order.eq);
+
+    const f3 = try Fraction.init(1, 2, true);
+    try expect(try f1.order(&f3) == std.math.Order.gt);
+    try expect(try f3.order(&f1) == std.math.Order.lt);
+    try expect(try f3.order(&f3) == std.math.Order.eq);
+
+    const f4 = try Fraction.init(0, 1, false);
+    const f5 = try Fraction.init(0, 2, true);
+    try expect(try f4.order(&f5) == std.math.Order.eq);
+    try expect(try f5.order(&f4) == std.math.Order.eq);
+    try expect(try f4.order(&f4) == std.math.Order.eq);
+    try expect(try f5.order(&f5) == std.math.Order.eq);
+}
