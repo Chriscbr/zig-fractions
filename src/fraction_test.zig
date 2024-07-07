@@ -207,3 +207,17 @@ test "order" {
     try expect(try f4.order(&f4) == std.math.Order.eq);
     try expect(try f5.order(&f5) == std.math.Order.eq);
 }
+
+test "mul" {
+    var f1 = try Fraction.init(1, 2, false);
+    const f2 = try Fraction.init(3, 5, false);
+    try f1.mul(&f2);
+    try expectEqual(3, f1.num);
+    try expectEqual(10, f1.denom);
+
+    var f3 = try Fraction.init(1, 2, true);
+    try f3.mul(&f3);
+    try expectEqual(1, f3.num);
+    try expectEqual(4, f3.denom);
+    try expectEqual(false, f3.sign);
+}

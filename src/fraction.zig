@@ -235,6 +235,19 @@ pub const Fraction = struct {
         const bc = try math.mul(usize, other.num, self.denom);
         return math.order(ad, bc);
     }
+
+    /// Multiply another fraction to this fraction.
+    /// The result is stored in this fraction.
+    /// Returns an error if the result is not representable.
+    pub fn mul(self: *Fraction, other: *const Fraction) !void {
+        // a/b * c/d = a*c / b*d
+        const num = try math.mul(usize, self.num, other.num);
+        const denom = try math.mul(usize, self.denom, other.denom);
+        self.num = num;
+        self.denom = denom;
+        self.sign = self.sign != other.sign;
+        self.simplify();
+    }
 };
 
 test {
