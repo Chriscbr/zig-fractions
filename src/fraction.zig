@@ -6,14 +6,12 @@ const Allocator = std.mem.Allocator;
 pub const FractionError = error{
     DenominatorCannotBeZero,
     DivisionByZero,
+    CannotConvertFloat,
 };
 
 // TODO: to(comptime type T) T
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
-
-// TODO: fromFloat()
-// see: https://github.com/python/cpython/blob/6239d41527d5977aa5d44e4b894d719bc045860e/Objects/floatobject.c#L1556
 
 pub const Fraction = struct {
     /// The numerator of the fraction.
@@ -24,6 +22,43 @@ pub const Fraction = struct {
 
     /// The sign bit of the fraction. True if the fraction is negative.
     sign: bool,
+
+    /// Create a fraction from a float.
+    /// The float must not be NaN or infinity.
+    pub fn fromFloat(value: anytype) !Fraction {
+        // Based on: https://github.com/python/cpython/blob/6239d41527d5977aa5d44e4b894d719bc045860e/Objects/floatobject.c#L1556
+        if (math.isNan(value)) {
+            return FractionError.CannotConvertFloat;
+        }
+        if (math.isInf(value)) {
+            return FractionError.CannotConvertFloat;
+        }
+        if (value == 0) {
+            return Fraction{ .num = 0, .denom = 1, .sign = false };
+        }
+
+        const f = math.frexp(value);
+        const sign = f.significand < 0;
+        var float_part = @abs(f.significand);
+        var exponent = f.exponent;
+
+        var i: u16 = 0;
+        while (i < 300 and float_part != math.floor(float_part)) : (i += 1) {
+            float_part *= 2;
+            exponent -= 1;
+        }
+        var num: usize = @intFromFloat(float_part);
+        var denom: usize = 1;
+        if (exponent > 0) {
+            num <<= @intCast(@abs(exponent));
+        } else {
+            denom <<= @intCast(@abs(exponent));
+        }
+
+        var frac = Fraction{ .num = num, .denom = denom, .sign = sign };
+        frac.simplify();
+        return frac;
+    }
 
     /// Initialize the fraction. The sign bit is true if the fraction is negative.
     /// The denominator must not be zero.

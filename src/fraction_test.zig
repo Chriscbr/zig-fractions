@@ -1,4 +1,5 @@
 const std = @import("std");
+const math = std.math;
 const testing = std.testing;
 
 const expect = testing.expect;
@@ -16,6 +17,29 @@ test "init" {
 
     const err = Fraction.init(1, 0, false);
     try expectError(FractionError.DenominatorCannotBeZero, err);
+}
+
+test "fromFloat" {
+    const f1 = try Fraction.fromFloat(@as(f64, 2.5));
+    try expectEqual(5, f1.num);
+    try expectEqual(2, f1.denom);
+    try expectEqual(false, f1.sign);
+
+    const f2 = try Fraction.fromFloat(@as(f64, -0.0));
+    try expectEqual(0, f2.num);
+    try expectEqual(1, f2.denom);
+    try expectEqual(false, f2.sign);
+
+    const f3 = try Fraction.fromFloat(@as(f64, -123));
+    try expectEqual(123, f3.num);
+    try expectEqual(1, f3.denom);
+    try expectEqual(true, f3.sign);
+
+    const err1 = Fraction.fromFloat(math.inf(f64));
+    try expectError(FractionError.CannotConvertFloat, err1);
+
+    const err2 = Fraction.fromFloat(math.nan(f64));
+    try expectError(FractionError.CannotConvertFloat, err2);
 }
 
 test "toString" {
