@@ -14,6 +14,7 @@ pub const FractionError = error{
 
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
+// TODO: sqrt(), toSqrt()
 
 pub const Fraction = struct {
     /// The numerator of the fraction.
