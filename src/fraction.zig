@@ -240,11 +240,12 @@ pub const Fraction = struct {
     /// Subtract another fraction from this fraction.
     /// The result is stored in this fraction.
     pub fn sub(self: *Fraction, other: *const Fraction) !void {
+        const ad = try math.mul(usize, self.num, other.denom);
+        const bc = try math.mul(usize, other.num, self.denom);
+        const denom = try math.mul(usize, self.denom, other.denom);
+
         if (!self.sign and other.sign) {
             // a/b - -c/d = a/b + c/d = (a*d + b*c) / b*d
-            const ad = try math.mul(usize, self.num, other.denom);
-            const bc = try math.mul(usize, other.num, self.denom);
-            const denom = try math.mul(usize, self.denom, other.denom);
             const num = try math.add(usize, ad, bc);
             self.num = num;
             self.denom = denom;
@@ -253,9 +254,6 @@ pub const Fraction = struct {
             return;
         } else if (self.sign and !other.sign) {
             // -a/b - c/d = -a/b + -c/d = -(a*d + b*c) / b*d
-            const ad = try math.mul(usize, self.num, other.denom);
-            const bc = try math.mul(usize, other.num, self.denom);
-            const denom = try math.mul(usize, self.denom, other.denom);
             const num = try math.add(usize, ad, bc);
             self.num = num;
             self.denom = denom;
@@ -274,9 +272,6 @@ pub const Fraction = struct {
             .gt => {
                 // a/b - c/d = (a*d - b*c) / b*d
                 // -a/b - -c/d = - (a*d + b*c) / b*d
-                const ad = try math.mul(usize, self.num, other.denom);
-                const bc = try math.mul(usize, other.num, self.denom);
-                const denom = try math.mul(usize, self.denom, other.denom);
                 const num = try math.sub(usize, ad, bc);
                 self.num = num;
                 self.denom = denom;
@@ -286,9 +281,6 @@ pub const Fraction = struct {
             .lt => {
                 // a/b - c/d = - (b*c - a*d) / b*d
                 // -a/b - -c/d = (b*c - a*d) / b*d
-                const ad = try math.mul(usize, self.num, other.denom);
-                const bc = try math.mul(usize, other.num, self.denom);
-                const denom = try math.mul(usize, self.denom, other.denom);
                 const num = try math.sub(usize, bc, ad);
                 self.num = num;
                 self.denom = denom;
