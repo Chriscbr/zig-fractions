@@ -6,10 +6,12 @@ const Allocator = std.mem.Allocator;
 pub const FractionError = error{
     DenominatorCannotBeZero,
     DivisionByZero,
-    CannotConvertFloat,
+    CannotConvertFromFloat,
+    FractionIsNotInteger,
+    FractionIsNegative,
+    FractionOutsideTargetRange,
 };
 
-// TODO: to(comptime type T) T
 // TODO: mutating floor(), ceil(), round()
 // TODO: toFloor(), toCeil(), toRound()
 
@@ -28,10 +30,10 @@ pub const Fraction = struct {
     pub fn fromFloat(value: anytype) !Fraction {
         // Based on: https://github.com/python/cpython/blob/6239d41527d5977aa5d44e4b894d719bc045860e/Objects/floatobject.c#L1556
         if (math.isNan(value)) {
-            return FractionError.CannotConvertFloat;
+            return FractionError.CannotConvertFromFloat;
         }
         if (math.isInf(value)) {
-            return FractionError.CannotConvertFloat;
+            return FractionError.CannotConvertFromFloat;
         }
         if (value == 0) {
             return Fraction{ .num = 0, .denom = 1, .sign = false };
@@ -206,11 +208,10 @@ pub const Fraction = struct {
 
     /// Return a new fraction that is the reciprocal.
     pub fn toReciprocal(self: Fraction) !Fraction {
-        const result = Fraction{ .num = self.denom, .denom = self.num, .sign = self.sign };
-        if (result.denom == 0) {
+        if (self.num == 0) {
             return FractionError.DenominatorCannotBeZero;
         }
-        return result;
+        return Fraction{ .num = self.denom, .denom = self.num, .sign = self.sign };
     }
 
     /// Returns true if the two fractions are equal.
@@ -384,6 +385,35 @@ pub const Fraction = struct {
         self.denom = denom;
         self.sign = self.sign != other.sign;
         self.simplify();
+    }
+
+    /// Convert self to type T.
+    ///
+    /// Returns an error if self cannot be narrowed into the requested type without truncation.
+    pub fn to(self: *const Fraction, comptime T: type) !T {
+        switch (@typeInfo(T)) {
+            .Float => {
+                const sign = @as(T, if (self.sign) -1.0 else 1.0);
+                return sign * @as(T, @floatFromInt(self.num)) / @as(T, @floatFromInt(self.denom));
+            },
+            .Int => {
+                const signedness = @typeInfo(T).Int.signedness;
+                if (self.sign and signedness == .unsigned) {
+                    return FractionError.FractionIsNegative;
+                }
+                const remainder = self.num % self.denom;
+                if (remainder != 0) {
+                    return FractionError.FractionIsNotInteger;
+                }
+                const result = @divExact(self.num, self.denom);
+                if (result > math.maxInt(T) or result < math.minInt(T)) {
+                    return FractionError.FractionOutsideTargetRange;
+                }
+                const value = @as(T, @intCast(result));
+                return if (self.sign) 0 - value else value;
+            },
+            else => @compileError("cannot convert Fraction to type " ++ @typeName(T)),
+        }
     }
 };
 

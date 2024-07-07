@@ -36,10 +36,10 @@ test "fromFloat" {
     try expectEqual(true, f3.sign);
 
     const err1 = Fraction.fromFloat(math.inf(f64));
-    try expectError(FractionError.CannotConvertFloat, err1);
+    try expectError(FractionError.CannotConvertFromFloat, err1);
 
     const err2 = Fraction.fromFloat(math.nan(f64));
-    try expectError(FractionError.CannotConvertFloat, err2);
+    try expectError(FractionError.CannotConvertFromFloat, err2);
 }
 
 test "toString" {
@@ -65,11 +65,38 @@ test "format" {
     defer testing.allocator.free(f1_fmt);
     try expect(std.mem.eql(u8, "-123/456", f1_fmt));
 
-    // TODO: this test might fail on 32-bit systems
     const f2 = try Fraction.init(std.math.maxInt(usize) - 1, std.math.maxInt(usize), true);
     const f2_fmt = try std.fmt.allocPrintZ(testing.allocator, "{d}", .{f2});
     defer testing.allocator.free(f2_fmt);
     try expect(std.mem.eql(u8, "-18446744073709551614/18446744073709551615", f2_fmt));
+}
+
+test "to" {
+    const f1 = try Fraction.init(1, 2, true);
+    const r1 = try f1.to(f64);
+    try expectEqual(-0.5, r1);
+    const err1 = f1.to(u64);
+    try expectError(FractionError.FractionIsNegative, err1);
+
+    const f2 = try Fraction.init(1, std.math.maxInt(u64), false);
+    const r2 = try f2.to(f64);
+    try expectEqual(5.421010862427522e-20, r2);
+    const err2 = f2.to(u64);
+    try expectError(FractionError.FractionIsNotInteger, err2);
+
+    const f3 = try Fraction.init(std.math.maxInt(u64), 1, false);
+    const r3 = try f3.to(f64);
+    try expectEqual(18446744073709551615.0, r3);
+    const r4 = try f3.to(u64);
+    try expectEqual(std.math.maxInt(u64), r4);
+    const err3 = f3.to(u8);
+    try expectError(FractionError.FractionOutsideTargetRange, err3);
+
+    const f5 = try Fraction.init(10, 2, true);
+    const r5 = try f5.to(i8);
+    try expectEqual(-5, r5);
+    const r6 = try f5.to(f16);
+    try expectEqual(-5.0, r6);
 }
 
 test "abs" {
