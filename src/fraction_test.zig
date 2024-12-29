@@ -435,3 +435,29 @@ test "div" {
     const err = f4.div(&f5);
     try expectError(FractionError.DivisionByZero, err);
 }
+
+test "floor" {
+    var f1 = try Fraction.init(5, 2, false);
+    f1.floor();
+    try expectEqual(2, f1.num);
+    try expectEqual(1, f1.denom);
+    try expectEqual(false, f1.sign);
+
+    var f2 = try Fraction.init(1, 2, false);
+    f2.floor();
+    try expectEqual(0, f2.num);
+    try expectEqual(1, f2.denom);
+    try expectEqual(false, f2.sign);
+
+    var f3 = try Fraction.init(7, 3, true);
+    f3.floor();
+    try expectEqual(2, f3.num);
+    try expectEqual(1, f3.denom);
+    try expectEqual(true, f3.sign);
+
+    var f4 = try Fraction.init(1, 2, true);
+    f4.floor();
+    try expectEqual(0, f4.num);
+    try expectEqual(1, f4.denom);
+    try expectEqual(true, f4.sign);
+}

@@ -274,6 +274,13 @@ pub const Fraction = struct {
         return math.order(ad, bc);
     }
 
+    /// Mutates this fraction to round down the value to the nearest integer.
+    pub fn floor(self: *Fraction) void {
+        self.num = @divFloor(self.num, self.denom);
+        self.denom = 1;
+        self.simplify();
+    }
+
     /// Add another fraction to this fraction.
     /// The result is stored in this fraction.
     pub fn add(self: *Fraction, other: *const Fraction) !void {
